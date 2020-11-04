@@ -1,6 +1,6 @@
 import graphene
 from .types import UserType
-from .mutations import CreateUserMutation
+from .mutations import CreateUserMutation, RegisterUserMutation, ResetPasswordEmailMutation
 from django.contrib.auth import get_user_model
 
 
@@ -21,3 +21,6 @@ class Query(graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUserMutation.Field()
+    register_user = RegisterUserMutation.Field()
+    reset_password = ResetPasswordEmailMutation.Field()
+
