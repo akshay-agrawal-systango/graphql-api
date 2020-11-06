@@ -77,11 +77,72 @@ class ResetPasswordEmailMutation(graphene.Mutation):
         return ResetPasswordEmailMutation(user=user)
 
 
-class SetPasswordMutation(graphene.Mutation):
+class RegisterUser(graphene.Mutation):
+
     user = graphene.Field(UserType)
 
     class Arguments:
+        username = graphene.String(required=True)
         password = graphene.String(required=True)
+        email = graphene.String(required=True)
 
-    def mutate(self, info):
-        pass
+    def mutate(self, info, username, password, email):
+        users = User.objects.filter(Q(username=username)|Q(email=email))
+        if users:
+            raise Exception('Email or username already exits')
+        else:
+            user = User.objects.create(username=username, email=email)
+            user.set_password(password)
+            user.save()
+            profile = Profile.objects.create(user=user)
+            profile.send_activation_email(info)
+
+        return RegisterUser(user=user)
+
+class VerifyEmail(graphene.Mutation):
+
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        token = graphene.String(required=True)
+
+    def mutate(self, info, token):
+        try:
+            user = Profile.verify(token)
+            return VerifyEmail(user=user)
+        except:
+            raise Exception('Invalid token')
+
+
+class ResetPasswordEmail(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        email = graphene.String(required=True)
+
+    def mutate(self, info, email):
+        user = User.objects.filter(email=email).first()
+        # send email to reset password
+        if user:
+            user.profile.send_password_reset_email(info)
+        else:
+            raise Exception('User does not exits!')
+
+        return ResetPasswordEmail(user=user)
+
+
+class SetPassword(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        token = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+
+    def mutate(self, info, token, new_password):
+        try:
+            user = Profile.verify(token)
+            user.set_password(new_password)
+            user.save()
+            return ResetPasswordEmail(user=user)
+        except:
+            raise Exception('Invalid token')

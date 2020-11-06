@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .utils import get_token, get_token_paylod
-from .exceptions import UserAlreadyVerified
+from django.contrib.sites.shortcuts import get_current_site
+import time
+from django.template.loader import render_to_string
 
 # Create your models here.
 
@@ -17,7 +19,7 @@ class Profile(models.Model):
         return "%s - status" % (self.user)
 
     def get_email_context(self, info, **kwargs):
-        token = get_token(self.user, action, **kwargs)
+        token = get_token(self.user, 'activation', **kwargs)
         site = get_current_site(info.context)
         return {
             "user": self.user,
@@ -36,7 +38,7 @@ class Profile(models.Model):
         message = render_to_string('account_activation_email.html', email_context)
         return self.user.email_user(subject, message)
 
-    def send_password_set_email(self, info, *args, **kwargs):
+    def send_password_reset_email(self, info, *args, **kwargs):
         email_context = self.get_email_context(info)
         subject = 'Reset Your Account Password'
         message = render_to_string('reset_password_email.html', email_context)
@@ -44,11 +46,12 @@ class Profile(models.Model):
 
     @classmethod
     def verify(cls, token):
-        payload = get_token_paylod(token)
-        user = UserModel._default_manager.get(**payload)
+        payload = get_token_paylod(token, 'activation')
+        user = User._default_manager.get(**payload)
         profile = cls.objects.get(user=user)
         if profile.email_confirmed is False:
             profile.email_confirmed = True
             profile.save()
         else:
-            raise UserAlreadyVerified
+            pass
+        return user
