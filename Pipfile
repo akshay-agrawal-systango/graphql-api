@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 graphene-django = "*"
 django-graphql-jwt = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.8"

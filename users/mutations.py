@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
-from graphene_django.forms.mutation import DjangoFormMutation
-from .forms import SignUpForm
+from graphene_django.forms.mutation import DjangoFormMutation, DjangoModelFormMutation
+from .forms import SignUpForm, ProfileForm
 from django.contrib.auth.models import User
 from .types import UserType
 from django.db.models import Q
@@ -146,3 +146,11 @@ class SetPassword(graphene.Mutation):
             return ResetPasswordEmail(user=user)
         except:
             raise Exception('Invalid token')
+
+
+class UpdateProfile(DjangoModelFormMutation):
+
+    class Meta:
+        form_class = ProfileForm
+
+

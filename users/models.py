@@ -16,7 +16,7 @@ class Profile(models.Model):
     country = models.CharField(max_length=100, default='', blank=True)
 
     def __str__(self):
-        return "%s - status" % (self.user)
+        return "%s email confirmed : %s" % (self.user, self.email_confirmed)
 
     def get_email_context(self, info, **kwargs):
         token = get_token(self.user, 'activation', **kwargs)
