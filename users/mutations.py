@@ -12,6 +12,8 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from .models import Profile
+from .bases import MutationMixin, DynamicArgsMixin
+from .mixins import PasswordResetMixin, UpdateAccountMixin
 
 
 class CreateUserMutation(DjangoFormMutation):
@@ -154,3 +156,15 @@ class UpdateProfile(DjangoModelFormMutation):
         form_class = ProfileForm
 
 
+class PasswordReset(
+    MutationMixin, DynamicArgsMixin, PasswordResetMixin, graphene.Mutation
+):
+    __doc__ = PasswordResetMixin.__doc__
+    _required_args = ["token", "new_password1", "new_password2"]
+
+
+class UpdateAccount(
+    MutationMixin, DynamicArgsMixin, UpdateAccountMixin, graphene.Mutation
+):
+    __doc__ = UpdateAccountMixin.__doc__
+    _args = ["first_name", "last_name"]

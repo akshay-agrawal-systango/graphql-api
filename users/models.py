@@ -4,6 +4,8 @@ from .utils import get_token, get_token_paylod
 from django.contrib.sites.shortcuts import get_current_site
 import time
 from django.template.loader import render_to_string
+from .constants import Messages, TokenAction
+from .exceptions import UserAlreadyVerified
 
 # Create your models here.
 
@@ -18,8 +20,8 @@ class Profile(models.Model):
     def __str__(self):
         return "%s email confirmed : %s" % (self.user, self.email_confirmed)
 
-    def get_email_context(self, info, **kwargs):
-        token = get_token(self.user, 'activation', **kwargs)
+    def get_email_context(self, info, action, **kwargs):
+        token = get_token(self.user, action, **kwargs)
         site = get_current_site(info.context)
         return {
             "user": self.user,
@@ -33,25 +35,25 @@ class Profile(models.Model):
         }
 
     def send_activation_email(self, info, *args, **kwargs):
-        email_context = self.get_email_context(info)
+        email_context = self.get_email_context(info, TokenAction.ACTIVATION)
         subject = 'Activate Your Account'
         message = render_to_string('account_activation_email.html', email_context)
         return self.user.email_user(subject, message)
 
     def send_password_reset_email(self, info, *args, **kwargs):
-        email_context = self.get_email_context(info)
+        email_context = self.get_email_context(info, TokenAction.PASSWORD_RESET)
         subject = 'Reset Your Account Password'
         message = render_to_string('reset_password_email.html', email_context)
         return self.user.email_user(subject, message)
 
     @classmethod
     def verify(cls, token):
-        payload = get_token_paylod(token, 'activation')
+        payload = get_token_paylod(token, TokenAction.ACTIVATION)
         user = User._default_manager.get(**payload)
         profile = cls.objects.get(user=user)
         if profile.email_confirmed is False:
             profile.email_confirmed = True
             profile.save()
         else:
-            pass
-        return user
+            raise UserAlreadyVerified
+

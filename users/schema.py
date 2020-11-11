@@ -8,7 +8,9 @@ from .mutations import (
     VerifyEmail,
     ResetPasswordEmail,
     SetPassword,
-    UpdateProfile
+    UpdateProfile,
+    PasswordReset,
+    UpdateAccount
     )
 from django.contrib.auth.models import User
 from .models import Profile
@@ -48,7 +50,8 @@ class Mutation(graphene.ObjectType):
     register_user = RegisterUser.Field()
     verify_email = VerifyEmail.Field()
     reset_password_email = ResetPasswordEmail.Field()
-    set_password = SetPassword.Field()
-    # to update profile user_id and profile_id is required in mutaion query
+    # set_password = SetPassword.Field()
     update_profile = UpdateProfile.Field()
+    password_reset = PasswordReset.Field()
+    update_account = UpdateAccount.Field()
 
