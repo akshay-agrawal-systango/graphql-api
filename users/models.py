@@ -6,6 +6,7 @@ import time
 from django.template.loader import render_to_string
 from .constants import Messages, TokenAction
 from .exceptions import UserAlreadyVerified
+from .signals import user_verified
 
 # Create your models here.
 
@@ -49,7 +50,8 @@ class Profile(models.Model):
         profile = cls.objects.get(user=user)
         if profile.email_confirmed is False:
             profile.email_confirmed = True
-            profile.save()
+            profile.save(update_fields=["email_confirmed"])
+            user_verified.send(sender=cls, user=user)
         else:
             raise UserAlreadyVerified
 

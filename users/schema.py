@@ -12,6 +12,7 @@ from .types import UserType, ProfileType
 #     )
 from .mutations import (
     Register,
+    VerifyAccount,
     SendPasswordResetEmail,
     PasswordReset,
     UpdateAccount,
@@ -57,6 +58,7 @@ class Mutation(graphene.ObjectType):
     # set_password = SetPassword.Field()
     # update_profile = UpdateProfile.Field()
     register_user = Register.Field()
+    verify_account = VerifyAccount.Field()
     send_password_reset_email = SendPasswordResetEmail.Field()
     password_reset = PasswordReset.Field()
     update_account = UpdateAccount.Field()

@@ -15,6 +15,7 @@ from .models import Profile
 from .bases import MutationMixin, DynamicArgsMixin
 from .mixins import (
     RegisterMixin,
+    VerifyAccountMixin,
     PasswordResetMixin,
     UpdateAccountMixin,
     SendPasswordResetEmailMixin
@@ -166,6 +167,13 @@ class Register(MutationMixin, DynamicArgsMixin, RegisterMixin, graphene.Mutation
     __doc__ = RegisterMixin.__doc__
 
     _required_args = ["username", "email", "password1", "password2"]
+
+
+class VerifyAccount(
+    MutationMixin, DynamicArgsMixin, VerifyAccountMixin, graphene.Mutation
+):
+    __doc__ = VerifyAccountMixin.__doc__
+    _required_args = ["token"]
 
 
 class SendPasswordResetEmail(

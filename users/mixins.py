@@ -3,7 +3,7 @@ from .utils import revoke_user_refresh_token, get_token_paylod
 from django.contrib.auth.models import User
 from .constants import Messages, TokenAction
 from django.core.signing import BadSignature, SignatureExpired
-from .exceptions import TokenScopeError, UserNotVerified, EmailAlreadyInUse
+from .exceptions import TokenScopeError, UserAlreadyVerified, UserNotVerified, EmailAlreadyInUse
 from .bases import Output
 from .forms import UpdateAccountForm, EmailForm, RegisterForm
 from .decorators import verification_required
@@ -47,6 +47,29 @@ class RegisterMixin(Output):
                 success=False,
                 errors={User.EMAIL_FIELD: Messages.EMAIL_IN_USE},
             )
+
+
+class VerifyAccountMixin(Output):
+    """
+    Verify user account.
+
+    Receive the token that was sent by email.
+    If the token is valid, make the user verified
+    by making the `user.profile.email_confirmed` field true.
+    """
+
+    @classmethod
+    def resolve_mutation(cls, root, info, **kwargs):
+        try:
+            token = kwargs.get("token")
+            Profile.verify(token)
+            return cls(success=True)
+        except UserAlreadyVerified:
+            return cls(success=False, errors=Messages.ALREADY_VERIFIED)
+        except SignatureExpired:
+            return cls(success=False, errors=Messages.EXPIRED_TOKEN)
+        except (BadSignature, TokenScopeError):
+            return cls(success=False, errors=Messages.INVALID_TOKEN)
 
 
 class SendPasswordResetEmailMixin(Output):
