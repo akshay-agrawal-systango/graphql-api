@@ -18,7 +18,8 @@ from .mixins import (
     VerifyAccountMixin,
     PasswordResetMixin,
     UpdateAccountMixin,
-    SendPasswordResetEmailMixin
+    SendPasswordResetEmailMixin,
+    PasswordChangeMixin,
     )
 
 
@@ -195,3 +196,10 @@ class UpdateAccount(
 ):
     __doc__ = UpdateAccountMixin.__doc__
     _args = ["first_name", "last_name", "email"]
+
+
+class PasswordChange(
+    MutationMixin, PasswordChangeMixin, DynamicArgsMixin, graphene.Mutation
+):
+    __doc__ = PasswordChangeMixin.__doc__
+    _required_args = ["old_password", "new_password1", "new_password2"]

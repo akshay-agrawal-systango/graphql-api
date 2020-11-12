@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.forms import SetPasswordForm, PasswordChangeForm
 from .utils import revoke_user_refresh_token, get_token_paylod
 from django.contrib.auth.models import User
 from .constants import Messages, TokenAction
@@ -6,13 +6,14 @@ from django.core.signing import BadSignature, SignatureExpired
 from .exceptions import TokenScopeError, UserAlreadyVerified, UserNotVerified, EmailAlreadyInUse
 from .bases import Output
 from .forms import UpdateAccountForm, EmailForm, RegisterForm
-from .decorators import verification_required
+from .decorators import verification_required, password_confirmation_required
 from .shortcuts import get_user_by_email
 from django.core.exceptions import ObjectDoesNotExist
 from .signals import user_registered
 from django.db import transaction
 import graphene
 from .models import Profile
+from graphql_jwt.decorators import token_auth
 
 
 class RegisterMixin(Output):
@@ -159,5 +160,48 @@ class UpdateAccountMixin(Output):
         if f.is_valid():
             f.save()
             return cls(success=True)
+        else:
+            return cls(success=False, errors=f.errors.get_json_data())
+
+
+class PasswordChangeMixin(Output):
+    """
+    Change account password when user knows the old password.
+
+    A new token and refresh token are sent. User must be verified.
+    """
+
+    form = PasswordChangeForm
+
+    @classmethod
+    def Field(cls, *args, **kwargs):
+        cls._meta.fields["refresh_token"] = graphene.Field(graphene.String)
+        cls._meta.fields["token"] = graphene.Field(graphene.String)
+        return super().Field(*args, **kwargs)
+
+    @classmethod
+    @token_auth
+    def login_on_password_change(cls, root, info, **kwargs):
+        return cls()
+
+    @classmethod
+    @verification_required
+    @password_confirmation_required
+    def resolve_mutation(cls, root, info, **kwargs):
+        user = info.context.user
+        f = cls.form(user, kwargs)
+        if f.is_valid():
+            revoke_user_refresh_token(user)
+            user = f.save()
+            payload = cls.login_on_password_change(
+                root,
+                info,
+                password=kwargs.get("new_password1"),
+                **{user.USERNAME_FIELD: getattr(user, user.USERNAME_FIELD)}
+            )
+            return_value = {}
+            for field in cls._meta.fields:
+                return_value[field] = getattr(payload, field)
+            return cls(**return_value)
         else:
             return cls(success=False, errors=f.errors.get_json_data())
