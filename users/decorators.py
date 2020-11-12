@@ -19,20 +19,8 @@ def verification_required(fn):
     @login_required
     def wrapper(cls, root, info, **kwargs):
         user = info.context.user
-        if not user.status.verified:
+        if not user.profile.email_confirmed:
             return cls(success=False, errors=Messages.NOT_VERIFIED)
-        return fn(cls, root, info, **kwargs)
-
-    return wrapper
-
-
-def secondary_email_required(fn):
-    @wraps(fn)
-    @verification_required
-    def wrapper(cls, root, info, **kwargs):
-        user = info.context.user
-        if not user.status.secondary_email:
-            return cls(success=False, errors=Messages.SECONDARY_EMAIL_REQUIRED)
         return fn(cls, root, info, **kwargs)
 
     return wrapper

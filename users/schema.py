@@ -1,16 +1,20 @@
 import graphene
 from .types import UserType, ProfileType
+# from .mutations import (
+#     CreateUserMutation,
+#     RegisterUserMutation,
+#     ResetPasswordEmailMutation,
+#     RegisterUser,
+#     VerifyEmail,
+#     ResetPasswordEmail,
+#     SetPassword,
+#     UpdateProfile,
+#     )
 from .mutations import (
-    CreateUserMutation,
-    RegisterUserMutation,
-    ResetPasswordEmailMutation,
-    RegisterUser,
-    VerifyEmail,
-    ResetPasswordEmail,
-    SetPassword,
-    UpdateProfile,
+    Register,
+    SendPasswordResetEmail,
     PasswordReset,
-    UpdateAccount
+    UpdateAccount,
     )
 from django.contrib.auth.models import User
 from .models import Profile
@@ -23,7 +27,7 @@ class Query(graphene.ObjectType):
     user_by_id = graphene.Field(UserType, id=graphene.Int())
     profile_by_id = graphene.Field(ProfileType, id=graphene.Int())
     users = DjangoFilterConnectionField(UserType)
-    profile = DjangoFilterConnectionField(ProfileType)
+    profiles = DjangoFilterConnectionField(ProfileType)
 
     # our Resolver method takes the GraphQL context (root, info) as well as
     # Argument (name) for the Field and returns data for the query Response
@@ -47,11 +51,13 @@ class Mutation(graphene.ObjectType):
     # create_user = CreateUserMutation.Field()
     # register_user = RegisterUserMutation.Field()
     # reset_password = ResetPasswordEmailMutation.Field()
-    register_user = RegisterUser.Field()
-    verify_email = VerifyEmail.Field()
-    reset_password_email = ResetPasswordEmail.Field()
+    # register_user = RegisterUser.Field()
+    # verify_email = VerifyEmail.Field()
+    # reset_password_email = ResetPasswordEmail.Field()
     # set_password = SetPassword.Field()
-    update_profile = UpdateProfile.Field()
+    # update_profile = UpdateProfile.Field()
+    register_user = Register.Field()
+    send_password_reset_email = SendPasswordResetEmail.Field()
     password_reset = PasswordReset.Field()
     update_account = UpdateAccount.Field()
 

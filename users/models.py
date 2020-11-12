@@ -12,10 +12,6 @@ from .exceptions import UserAlreadyVerified
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_confirmed = models.BooleanField(default=False)
-    profession = models.CharField(max_length=100, default='', blank=True)
-    phone = models.CharField(max_length=20, default='', blank=True)
-    city = models.CharField(max_length=100, default='', blank=True)
-    country = models.CharField(max_length=100, default='', blank=True)
 
     def __str__(self):
         return "%s email confirmed : %s" % (self.user, self.email_confirmed)
@@ -56,4 +52,19 @@ class Profile(models.Model):
             profile.save()
         else:
             raise UserAlreadyVerified
+
+    @classmethod
+    def email_is_free(cls, email):
+        try:
+            User._default_manager.get(**{User.EMAIL_FIELD: email})
+            return False
+        except Exception:
+            pass
+        return True
+
+    @classmethod
+    def clean_email(cls, email=False):
+        if email:
+            if cls.email_is_free(email) is False:
+                raise EmailAlreadyInUse
 
