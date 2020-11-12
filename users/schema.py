@@ -17,6 +17,7 @@ from .mutations import (
     PasswordReset,
     UpdateAccount,
     PasswordChange,
+    EmailChange,
     )
 from django.contrib.auth.models import User
 from .models import Profile
@@ -63,5 +64,5 @@ class Mutation(graphene.ObjectType):
     send_password_reset_email = SendPasswordResetEmail.Field()
     password_reset = PasswordReset.Field()
     update_account = UpdateAccount.Field()
-    password_change = PasswordChange.Field()
+    email_change = EmailChange.Field()
 

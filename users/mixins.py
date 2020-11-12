@@ -63,7 +63,10 @@ class VerifyAccountMixin(Output):
     def resolve_mutation(cls, root, info, **kwargs):
         try:
             token = kwargs.get("token")
-            Profile.verify(token)
+            try:
+                Profile.verify(token, TokenAction.ACTIVATION)
+            except:
+                Profile.verify(token, TokenAction.EMAIL_CONFIRMATION)
             return cls(success=True)
         except UserAlreadyVerified:
             return cls(success=False, errors=Messages.ALREADY_VERIFIED)
@@ -205,3 +208,23 @@ class PasswordChangeMixin(Output):
             return cls(**return_value)
         else:
             return cls(success=False, errors=f.errors.get_json_data())
+
+
+class EmailChangeMixin(Output):
+
+    form = EmailForm
+
+    @classmethod
+    @verification_required
+    def resolve_mutation(cls, root, info, **kwargs):
+        user = info.context.user
+        f = cls.form(kwargs, instance=user)
+        if f.is_valid():
+            f.save()
+            user.profile.email_confirmed = False
+            user.profile.save(update_fields=["email_confirmed"])
+            user.profile.send_email_confirmation_mail(info)
+            return cls(success=True)
+        else:
+            return cls(success=False, errors=f.errors.get_json_data())
+

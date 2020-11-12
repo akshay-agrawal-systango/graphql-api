@@ -24,11 +24,13 @@ class RegisterForm(UserCreationForm):
         fields = ('username', 'email')
 
 
-class EmailForm(forms.Form):
-    email = forms.EmailField(max_length=254)
+class EmailForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('email',)
 
 
 class UpdateAccountForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email')
+        fields = ('first_name', 'last_name')

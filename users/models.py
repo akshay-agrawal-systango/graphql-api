@@ -43,9 +43,15 @@ class Profile(models.Model):
         message = render_to_string('reset_password_email.html', email_context)
         return self.user.email_user(subject, message)
 
+    def send_email_confirmation_mail(self, info, *args, **kwargs):
+        email_context = self.get_email_context(info, TokenAction.EMAIL_CONFIRMATION)
+        subject = 'Email Confirmation'
+        message = render_to_string('email_confirmation.html', email_context)
+        return self.user.email_user(subject, message)
+
     @classmethod
-    def verify(cls, token):
-        payload = get_token_paylod(token, TokenAction.ACTIVATION)
+    def verify(cls, token, action):
+        payload = get_token_paylod(token, action)
         user = User._default_manager.get(**payload)
         profile = cls.objects.get(user=user)
         if profile.email_confirmed is False:

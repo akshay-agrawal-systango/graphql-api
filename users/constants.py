@@ -47,3 +47,4 @@ class TokenAction(object):
     PASSWORD_RESET = "password_reset"
     ACTIVATION_SECONDARY_EMAIL = "activation_secondary_email"
     PASSWORD_SET = "password_set"
+    EMAIL_CONFIRMATION = "email_confirmation"
